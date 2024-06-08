@@ -1,0 +1,193 @@
+﻿@using ServiceStack
+@using ServiceStack.Auth
+@using ServiceStack.Caching
+@using ServiceStack.FluentValidation
+@using ServiceStack.Web
+@using ServiceStack.Host.NetCore
+@using ServiceStack.Data
+@using ServiceStack.OrmLite
+
+@using Int2Roman.ServiceModel
+
+@model RomanNumberModel
+@{
+    ViewBag.Title = "Home Page";
+
+    string postURL = Url.Content(new Int2RomanDTO().ToUrl());
+
+    string number = (Model.Number == 0) ? string.Empty : Model.Number.ToString();
+}
+
+<div class="text-center">
+    <h1 class="display-4">Roman Number Calculator</h1>
+    <form method="post">
+
+        <div class="row g-3 align-items-start">
+            <div class="col-2">
+                <label for="Number" class="form-label m-0">Number: </label>
+            </div>
+            <div class="col-2">
+                <input for="Number"
+                       id="Number"
+                       name="Number"
+                       class="form-control"
+                       placeholder="Enter a number"
+                       maxlength="7"
+                       value="@number" />
+            </div>
+
+        </div>
+
+        <div class="row g-3 align-items-start">
+            <div class="col-2">
+                <label for="Number">Roman: </label>
+            </div>
+            <div class="col-2">
+                <input id="RomanNumber" class="form-control" disabled value="@Model.RomanNumber" />
+            </div>
+
+        </div>
+        <div class="row g-3 align-items-start">
+            <div class="col-4">
+                <span id="errorMessage" class="text-danger"></span>
+            </div>
+            <div class="col-auto">
+                <button id="btnCalculate" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+
+    </form>
+
+    <script>
+
+        const HTML_FLD_NUMBER = document.querySelector("#Number")
+        const HTML_FLD_ROMAN_NUMBER = document.querySelector("#RomanNumber")
+        const HTML_ERROR_MESSAGE = document.querySelector("#errorMessage")
+        const HTML_BTN_CALCULATE = document.querySelector("#btnCalculate")
+
+        const clearFields = () => {
+            HTML_FLD_ROMAN_NUMBER.value = ''
+            HTML_ERROR_MESSAGE.innerText = ''
+        }
+        /**
+        * Event Handler for numeric input
+        */
+        HTML_FLD_NUMBER.addEventListener('keypress', (e) => {
+
+            clearFields()
+
+            switch (true) {
+                case validKeys.some(n => n === e.keyCode):
+                    return true
+                    break
+                default:
+                    e.preventDefault()
+                    return false
+            }
+        })
+        /**
+         * Event Handler for change
+         */
+        HTML_FLD_NUMBER.addEventListener('change', () => {
+
+            clearFields()
+        })
+
+        /**
+        * Event Handler for paste
+        */
+        HTML_FLD_NUMBER.addEventListener('paste', (e) => {
+
+            clearFields()
+
+            const pastedData = e.clipboardData.getData('text/plain');
+
+            console.log('Pasted text:', pastedData);
+
+            if (isNaN(pastedData)) {
+                // Stop data pasting to prevent not numeric data
+                e.stopPropagation();
+                e.preventDefault();
+            }
+
+        })
+
+        /**
+         * Event Handler for click
+         */
+        HTML_BTN_CALCULATE.addEventListener('click', (e) => {
+
+            const num = parseInt(HTML_FLD_NUMBER.value)
+            const jsonData = { number: num }
+
+            // Don't allow the submit button behavior
+            e.preventDefault()
+
+            // Set method, header, and data for the AJAX call
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            }
+
+            fetch('@postURL', options)
+                .then(response => {
+                    console.log(response)
+                    if (response.ok) {
+                        return response.json()
+                    }
+                    // Display errors when ServiceStack validations failed
+                    HTML_ERROR_MESSAGE.innerText = response.statusText
+                    return
+
+                })
+                .then(data => {
+
+                    // Check for an error message
+                    if (data?.responseStatus) {
+                        HTML_ERROR_MESSAGE.innerText = data.responseStatus.message
+                    }
+                    else { // Otherwise display the answer
+
+                        HTML_FLD_ROMAN_NUMBER.value = data.result
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    // Place the cursor on the Input Field
+                    HTML_FLD_NUMBER.focus()
+                })
+
+        })
+
+        /**
+         * Constant key codes
+         */
+        const NUM48 = 48;
+        const BACKSPACE = 8
+        const LEFT_ARROW = 36
+        const RIGHT_ARROW = 39
+        const DELETE = 46
+
+        /**
+         * Numbers from 0 to 9
+         */
+        const numArr = new Array(10)        // create arr of ten item
+            .fill(0)                        // set each item to zeros
+            .map((_, i) => i + NUM48)       // assign key code from 0 to 9
+
+        /**
+         * Navigation keys backspace, left and right arrow, delete
+         */
+        const navKey = [BACKSPACE, LEFT_ARROW, RIGHT_ARROW, DELETE]
+
+        /**
+         * Concatenation to from numeric and navigation keys
+         */
+        const validKeys = [...navKey, ...numArr]
+    </script>
+</div>

@@ -1,0 +1,73 @@
+@{ 
+    var debug = HostContext.DebugMode;
+    var min = debug ? "" : "[hash].min";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Int2Roman</title>
+
+    @Html.BundleCss(new BundleOptions {
+        Sources = {
+            "!/assets/css/default.css",
+            "/assets/css/",
+            "/css/buttons.css",
+            "/css/svg-auth.css",
+            "/css/svg-icons.css",
+            "/css/app.css",
+        },
+        SaveToDisk = !debug,
+        OutputTo = $"/css/lib.bundle{min}.css"
+    })
+
+    @Html.BundleCss(new BundleOptions {
+        Sources = {
+            "/assets/css/default.css",
+        },
+        Minify = !debug,
+        Cache = !debug,
+        SaveToDisk = !debug,
+        OutputTo = $"/css/bundle{min}.css"
+    })
+
+    <script src="~/assets/js/jquery.min.js"></script>
+
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.ico">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="svg-logo svg-lg mr-1"></i>
+                    Int2Roman
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        
+        <main role="main" class="pb-3">
+            @RenderBody()            
+        </main>
+ 
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container mt-2">
+            &copy; @DateTime.Now.Year  
+        </div>
+    </footer>
+ 
+  @* @RenderSection("scripts", required: false) *@
+
+</body>
+</html>

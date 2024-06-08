@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ServiceStack" Version="8.*" />
+    <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="8.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Int2Roman.Lib\Int2Roman.Lib.csproj" />
+    <ProjectReference Include="..\Int2Roman.ServiceModel\Int2Roman.ServiceModel.csproj" />
+  </ItemGroup>
+
+</Project>
