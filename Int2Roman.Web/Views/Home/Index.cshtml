@@ -58,8 +58,25 @@
 
     </form>
 
+     
+    @* Defines exports and require; JavaScript elements to use JsonServiceClient *@
+    <script>
+        var exports = { __esModule: true }, module = { exports: exports }
+        Object.assign(window, exports); //import
+        function require(name) { return exports[name] || window[name] }
+    </script>
+
+    @* Include ServiceStack CLient library and DTOs *@
+    <script src="~/assets/js/servicestack-client.min.js"></script>
+    <script src="~/assets/js/dtos.js"></script>
+
     <script>
 
+        // Instantiate ServiceStack client Library
+        const { JsonServiceClient } = exports
+        const client = new JsonServiceClient();
+
+        // Define HTML Fields
         const HTML_FLD_NUMBER = document.querySelector("#Number")
         const HTML_FLD_ROMAN_NUMBER = document.querySelector("#RomanNumber")
         const HTML_ERROR_MESSAGE = document.querySelector("#errorMessage")
@@ -117,34 +134,17 @@
          */
         HTML_BTN_CALCULATE.addEventListener('click', (e) => {
 
-            const num = parseInt(HTML_FLD_NUMBER.value)
-            const jsonData = { number: num }
 
             // Don't allow the submit button behavior
             e.preventDefault()
+             
+            // Call Service thru jsonServiceClient
+            const num = parseInt(HTML_FLD_NUMBER.value)
+            const jsonData = { number: num }
 
-            // Set method, header, and data for the AJAX call
-            const options = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(jsonData)
-            }
-
-            fetch('@postURL', options)
-                .then(response => {
-                    console.log(response)
-                    if (response.ok) {
-                        return response.json()
-                    }
-                    // Display errors when ServiceStack validations failed
-                    HTML_ERROR_MESSAGE.innerText = response.statusText
-                    return
-
-                })
-                .then(data => {
-
+            client.post(new Int2RomanDTO(jsonData))
+                .then(function (data) {
+                    console.log(data)
                     // Check for an error message
                     if (data?.responseStatus) {
                         HTML_ERROR_MESSAGE.innerText = data.responseStatus.message
@@ -153,13 +153,7 @@
 
                         HTML_FLD_ROMAN_NUMBER.value = data.result
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                })
-                .finally(() => {
-                    // Place the cursor on the Input Field
-                    HTML_FLD_NUMBER.focus()
+
                 })
 
         })
