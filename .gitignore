@@ -396,3 +396,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/Int2Roman.Tests/IntegrationTest.cs
